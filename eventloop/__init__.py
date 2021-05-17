@@ -28,7 +28,7 @@ except ImportError:
             from PyQt5 import QtCore
             debug_print("using PyQt5")
         except ImportError:
-            pass
+            raise Exception("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found")
 
 has_pyuv = 'pyuv' in globals()
 has_PySide2 = 'PySide2' in globals()
