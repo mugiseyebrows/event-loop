@@ -12,6 +12,15 @@ or pushing files or restarting tests.
 powers nodejs event loop. Imagine you can `fs.watch` in python. No need to 
 imagine, now you can.
 
+Installing
+==========
+
+eventloop can be installed via pip as follows:
+
+::
+
+    pip install eventloop
+
 Author
 ======
 
@@ -20,7 +29,7 @@ Stanislav Doronin <mugisbrows@gmail.com>
 License
 =======
 
-Eventloop is distributed under the terms of MIT license, check LICENSE file.
+Eventloop is distributed under the terms of MIT license, check `LICENSE` file.
 
 Contributing
 ============
