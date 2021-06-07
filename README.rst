@@ -31,7 +31,7 @@ Usage
 
 In simple case you can use `on_file_changed` decorator. It creates event loop, system watch and schedule, then connects them, then starts the loop and calls decorated function on filesystem events.
 
-::
+.. code-block:: python
 
     from eventloop import on_file_changed
 
@@ -45,7 +45,7 @@ Decorator accepts `include` and `exclude` args (list of globs or names to includ
 
 If you need to watch more than one path you need to create and start `EventLoop` explicitly and pass it to decorators.
 
-:: 
+.. code-block:: python
 
     from eventloop import EventLoop, on_file_changed
 
@@ -65,7 +65,7 @@ If you need to watch more than one path you need to create and start `EventLoop`
 
 For finer control over things you can use classes, first example can be rewriten as
 
-::
+.. code-block:: python
 
     from eventloop import EventLoop, FileSystemWatch, Schedule, base
 
