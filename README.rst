@@ -29,7 +29,7 @@ Stanislav Doronin <mugisbrows@gmail.com>
 Usage
 =====
 
-In most simple case you can just use `on_file_changed` decorator. It creates event loop, system watcher and schedule, then connects them, then starts the loop.
+In simple case you can use `on_file_changed` decorator. It creates event loop, system watch and schedule, then connects them, then starts the loop and calls decorated function on filesystem events.
 
 ::
 
@@ -41,9 +41,9 @@ In most simple case you can just use `on_file_changed` decorator. It creates eve
         def your_handler(file_path):
             print(file_path)
 
-Decorator accepts optional include and exclude args (list of globs or names to include or exclude files from watch) and timeout arg (read about timeout below) and loop arg.
+Decorator accepts `include` and `exclude` args (list of globs or names to include or exclude files from watch) and `timeout` arg (read about timeout below) and `loop` arg.
 
-If you need to watch more than one path you need to build and start `EventLoop` explicitly and pass it to decorators.
+If you need to watch more than one path you need to create and start `EventLoop` explicitly and pass it to decorators.
 
 :: 
 
@@ -83,7 +83,7 @@ For finer control over things you can use classes, first example can be rewriten
         schedule = Schedule(executor)
         loop.start()
 
-`Schedule` caches (deduplicates) tasks appended within `timeout` interval, so for example three immediate consecutive `changed` events in same file end up in just one `Executor.execute(task)` call. `on_file_changed` decorator also uses `Schedule` to cache events.
+`Schedule` caches (deduplicates) tasks appended within `timeout` interval, so for example three immediate consecutive `changed` events on same file end up in just one `Executor.execute(task)` call. `on_file_changed` decorator also uses `Schedule` to cache events.
 
 License
 =======
