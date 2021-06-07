@@ -99,3 +99,34 @@ class Schedule:
         timer = SingleShotTimer()
         timer.start(timeout, self.on_timeout)
         self._timer = timer
+
+def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
+
+    def decorator(func):
+
+        loop_ = loop
+        if loop is None:
+            loop_ = EventLoop()
+
+        class Executor(base.Executor):
+            def execute(self, file_path):
+                debug_print("Executor.execute")
+                return func(file_path)
+
+        def on_change(file_path, event):
+            debug_print("on_change", file_path)
+            schedule.append(file_path, timeout)
+            
+        executor = Executor()
+        
+        watch = FileSystemWatch()
+        schedule = Schedule(executor)
+        watch.start(path, on_change, recursive=True, include=include, exclude=exclude)
+
+        if loop is None:
+            loop_.start()
+
+        return None
+    
+    return decorator
+    
