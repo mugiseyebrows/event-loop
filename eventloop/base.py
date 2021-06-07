@@ -13,6 +13,14 @@ class Executor:
     def execute(self, task):
         return True
 
+class FuncExecutor(Executor):
+    def __init__(self, func):
+        super().__init__()
+        self._func = func
+    def execute(self, task):
+        debug_print("FuncExecutor.execute")
+        return self._func(task)
+
 class Logger:
     def print_info(self, msg):
         print(msg)

@@ -84,7 +84,7 @@ class Schedule:
         for task in self._tasks:
             debug_print("executing", task)
             res = executor.execute(task)
-            if not res:
+            if res == False:
                 debug_print("failed to execute task", task)
                 tasks.append(task)
         self._tasks = tasks
@@ -108,16 +108,11 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
         if loop is None:
             loop_ = EventLoop()
 
-        class Executor(base.Executor):
-            def execute(self, file_path):
-                debug_print("Executor.execute")
-                return func(file_path)
-
         def on_change(file_path, event):
             debug_print("on_change", file_path)
             schedule.append(file_path, timeout)
-            
-        executor = Executor()
+
+        executor = base.FuncExecutor(func)
         
         watch = FileSystemWatch()
         schedule = Schedule(executor)
@@ -125,8 +120,6 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
 
         if loop is None:
             loop_.start()
-
-        return None
     
     return decorator
     
