@@ -121,5 +121,7 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
         if loop is None:
             loop_.start()
     
+        return func
+    
     return decorator
     
