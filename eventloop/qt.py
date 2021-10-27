@@ -55,7 +55,7 @@ class FileSystemWatch(base.FileSystemWatch):
     def start(self, path, callback, include = None, exclude = None, recursive = False):
         super().start(path, callback, include, exclude, recursive)
         watcher = QtCore.QFileSystemWatcher()
-        dirs, files = walk(path, include, exclude)
+        dirs, files = walk(path, include, exclude, all_dirs=True)
         watcher.addPaths(dirs + files)
         watcher.fileChanged.connect(self.on_file_changed)
         watcher.directoryChanged.connect(self.on_directory_changed)
@@ -65,7 +65,7 @@ class FileSystemWatch(base.FileSystemWatch):
         include = self._include
         exclude = self._exclude
         watcher = self._watch
-        dirs, files = walk(path, include, exclude)
+        dirs, files = walk(path, include, exclude, all_dirs=True)
         watched = watcher.files()
         watcher.addPaths(dirs + files)
         for path in files:

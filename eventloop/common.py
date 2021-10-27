@@ -28,7 +28,7 @@ def path_matches(path, include, exclude):
                 return False
     return True
 
-def walk(path, include, exclude):
+def walk(path, include, exclude, all_dirs = False):
     """
     Examples:
         return only cpp files that don't start with moc_:
@@ -58,6 +58,10 @@ def walk(path, include, exclude):
                 else:
                     dirs.append(path_)
                     queue.append(path_)
+            elif all_dirs and os.path.isdir(path_):
+                dirs.append(path_)
+                queue.append(path_)
+                
     return dirs, files
 
 (
