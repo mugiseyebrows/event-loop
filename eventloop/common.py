@@ -50,18 +50,22 @@ def walk(path, include, exclude, all_dirs = False):
 
     while len(queue) > 0:
         path = queue.pop(0)
-        for n in os.listdir(path):
-            path_ = os.path.join(path, n)
-            if path_matches(path_, include, exclude):
-                if os.path.isfile(path_):
-                    files.append(path_)
-                else:
+        try:
+            for n in os.listdir(path):
+                path_ = os.path.join(path, n)
+                if path_matches(path_, include, exclude):
+                    if os.path.isfile(path_):
+                        files.append(path_)
+                    else:
+                        dirs.append(path_)
+                        queue.append(path_)
+                elif all_dirs and os.path.isdir(path_):
                     dirs.append(path_)
                     queue.append(path_)
-            elif all_dirs and os.path.isdir(path_):
-                dirs.append(path_)
-                queue.append(path_)
-                
+        except PermissionError as e:
+            debug_print(e)
+        except FileNotFoundError as e:
+            debug_print(e)
     return dirs, files
 
 (
