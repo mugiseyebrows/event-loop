@@ -7,6 +7,7 @@ from .common import debug_print, walk
 from . import base
 from . import uv
 from . import qt
+from . import qta
 
 try:
     import pyuv
@@ -24,9 +25,15 @@ except ImportError:
         except ImportError:
             raise Exception("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found")
 
+try:
+    import qasync
+except ImportError:
+    pass
+
 has_pyuv = 'pyuv' in globals()
 has_PySide2 = 'PySide2' in globals()
 has_PyQt5 = 'PyQt5' in globals()
+has_qasync = 'qasync' in globals()
 
 """ template
 if has_pyuv:
@@ -39,7 +46,10 @@ def EventLoop(app = None):
     if has_pyuv:
         return uv.EventLoop()
     elif has_PySide2 or has_PyQt5:
-        return qt.EventLoop(app)
+        if has_qasync:
+            return qta.EventLoop(app)
+        else:    
+            return qt.EventLoop(app)
 
 def FileSystemWatch():
     if has_pyuv:
