@@ -66,6 +66,8 @@ def walk(path, include, exclude, all_dirs = False):
             debug_print(e)
         except FileNotFoundError as e:
             debug_print(e)
+        except NotADirectoryError as e:
+            debug_print(e)
     return dirs, files
 
 (
