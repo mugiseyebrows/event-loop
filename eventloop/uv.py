@@ -67,7 +67,6 @@ class FileSystemWatch(base.FileSystemWatch):
             paths = [path]
 
         handles = []
-        is_dirs = []
 
         UV_FS_EVENT_RECURSIVE = 4
         flags = UV_FS_EVENT_RECURSIVE if recursive else 0
@@ -75,28 +74,22 @@ class FileSystemWatch(base.FileSystemWatch):
         for path in paths:
             handle = pyuv.fs.FSEvent(loop)
             handle.start(path, flags, self.onChanged)
-            is_dir = os.path.isdir(path)
             handle.ref = False
             handles.append(handle)
-            is_dirs.append(is_dir)
 
         self._handles = handles
-        self._is_dirs = is_dirs
-
     def stop(self):
         pass
 
     def onChanged(self, handle, filename, events, error):
         events_ = []
 
-        is_dir = self._is_dirs[self._handles.index(handle)]
-
-        if is_dir:
-            path = os.path.join(self._path, filename)
+        if os.path.isdir(handle.path):
+            path = os.path.join(handle.path, filename)
             if not path_matches(path, self._include, self._exclude):
                 return
         else:
-            path = self._path
+            path = handle.path
 
         if events & pyuv.fs.UV_RENAME:
             events_.append(EVENT_RENAME)
