@@ -4,6 +4,7 @@ from .common import debug_print, path_matches, EVENT_RENAME, EVENT_CHANGE
 import signal
 import sys
 import os
+import glob
 
 try:
     import pyuv
@@ -59,12 +60,28 @@ class FileSystemWatch(base.FileSystemWatch):
             print("Warning: recursive not implemented for this platform")
             # TODO: workaround for recursive
         loop = pyuv.Loop.default_loop()
-        handle = pyuv.fs.FSEvent(loop)
+
+        if glob.has_magic(path):
+            paths = glob.glob(path)
+        else:
+            paths = [path]
+
+        handles = []
+        is_dirs = []
+
         UV_FS_EVENT_RECURSIVE = 4
-        handle.start(path, UV_FS_EVENT_RECURSIVE if recursive else 0, self.onChanged)
-        handle.ref = False
-        self._watch = handle
-        self._isdir = os.path.isdir(path)
+        flags = UV_FS_EVENT_RECURSIVE if recursive else 0
+
+        for path in paths:
+            handle = pyuv.fs.FSEvent(loop)
+            handle.start(path, flags, self.onChanged)
+            is_dir = os.path.isdir(path)
+            handle.ref = False
+            handles.append(handle)
+            is_dirs.append(is_dir)
+
+        self._handles = handles
+        self._is_dirs = is_dirs
 
     def stop(self):
         pass
@@ -72,7 +89,9 @@ class FileSystemWatch(base.FileSystemWatch):
     def onChanged(self, handle, filename, events, error):
         events_ = []
 
-        if self._isdir:
+        is_dir = self._is_dirs[self._handles.index(handle)]
+
+        if is_dir:
             path = os.path.join(self._path, filename)
             if not path_matches(path, self._include, self._exclude):
                 return

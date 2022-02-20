@@ -110,7 +110,7 @@ class Schedule:
         timer.start(timeout, self.on_timeout)
         self._timer = timer
 
-def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
+def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recursive=True):
 
     def decorator(func):
 
@@ -126,7 +126,7 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None):
         
         watch = FileSystemWatch()
         schedule = Schedule(executor)
-        watch.start(path, on_change, recursive=True, include=include, exclude=exclude)
+        watch.start(path, on_change, recursive=recursive, include=include, exclude=exclude)
 
         if loop is None:
             loop_.start()

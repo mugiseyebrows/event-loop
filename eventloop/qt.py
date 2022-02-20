@@ -1,6 +1,8 @@
 from . import base
 import signal
 from .common import walk, EVENT_CHANGE, debug_print
+import glob
+import os
 
 try:
     import PySide2
@@ -55,22 +57,35 @@ class FileSystemWatch(base.FileSystemWatch):
     def start(self, path, callback, include = None, exclude = None, recursive = False):
         super().start(path, callback, include, exclude, recursive)
         watcher = QtCore.QFileSystemWatcher()
-        dirs, files = walk(path, include, exclude, all_dirs=True)
-        watcher.addPaths(dirs + files)
+        self._watch = watcher
+        dirs, files = walk(path, include, exclude, all_dirs=True, recursive=recursive)
+        self._addPaths(dirs + files)
         watcher.fileChanged.connect(self.on_file_changed)
         watcher.directoryChanged.connect(self.on_directory_changed)
-        self._watch = watcher
-
+        self._orig_path = path
+        
     def on_directory_changed(self, path):
         include = self._include
         exclude = self._exclude
         watcher = self._watch
-        dirs, files = walk(path, include, exclude, all_dirs=True)
+
+        # todo do glob instead of walk if _orig_path has magic
+        dirs, files = walk(path, include, exclude, all_dirs=True, recursive=self._recursive)
+
         watched = watcher.files()
-        watcher.addPaths(dirs + files)
+        if self._recursive:
+            self._addPaths(dirs + files)
+        else:
+            self._addPaths(files)
+            
         for path in files:
             if path not in watched:
                 self._callback(path, EVENT_CHANGE)
+
+    def _addPaths(self, paths):
+        watcher = self._watch
+        watcher.addPaths(paths)
+        #debug_print('watcher.addPaths', paths)
 
     def on_file_changed(self, path):
         self._callback(path, EVENT_CHANGE)

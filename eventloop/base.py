@@ -38,6 +38,7 @@ class FileSystemWatch:
             exclude = []
         self._include = include
         self._exclude = exclude
+        self._recursive = recursive
     
     def stop(self):
         pass
