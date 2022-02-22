@@ -1,6 +1,6 @@
 from . import base
 import signal
-from .common import walk, EVENT_CHANGE, debug_print
+from .common import walk, EVENT_CHANGE, debug_print, path_matches
 import glob
 import os
 
@@ -58,11 +58,23 @@ class FileSystemWatch(base.FileSystemWatch):
         super().start(path, callback, include, exclude, recursive)
         watcher = QtCore.QFileSystemWatcher()
         self._watch = watcher
-        dirs, files = walk(path, include, exclude, all_dirs=True, recursive=recursive)
-        self._addPaths(dirs + files)
+
+        if not recursive:
+            if glob.has_magic(path):
+                raise Exception('Not implemented')
+            paths_to_add = [path]
+            for root, dirs_, files in os.walk(path):
+                for f in files:
+                    p = os.path.join(root, f)
+                    if path_matches(p, include, exclude):
+                        paths_to_add.append(p)
+            self._addPaths(paths_to_add)
+        else:
+            dirs, files = walk(path, include, exclude, all_dirs=True, recursive=recursive)
+            self._addPaths(dirs + files)
+        
         watcher.fileChanged.connect(self.on_file_changed)
         watcher.directoryChanged.connect(self.on_directory_changed)
-        self._orig_path = path
         
     def on_directory_changed(self, path):
         include = self._include
@@ -88,6 +100,8 @@ class FileSystemWatch(base.FileSystemWatch):
         #debug_print('watcher.addPaths', paths)
 
     def on_file_changed(self, path):
+        if not path_matches(path, self._include, self._exclude):
+            return
         self._callback(path, EVENT_CHANGE)
 
     def stop(self):
