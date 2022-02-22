@@ -130,7 +130,11 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recu
 
         if loop is None:
             loop_.start()
-    
+        else:
+            loop._handles.append(watch)
+            loop._handles.append(schedule)
+            loop._handles.append(executor)
+
         return func
     
     return decorator

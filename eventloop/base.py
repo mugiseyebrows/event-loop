@@ -3,6 +3,9 @@ from .common import debug_print
 
 class EventLoop:
 
+    def __init__(self):
+        self._handles = []
+
     def start(self):
         pass
 
