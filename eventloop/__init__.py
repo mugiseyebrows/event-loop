@@ -27,6 +27,7 @@ except ImportError:
 
 try:
     import qasync
+    debug_print("using qasync")
 except ImportError:
     pass
 
