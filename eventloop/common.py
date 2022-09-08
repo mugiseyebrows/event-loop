@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 
 def debug_print_on(*args):
     print(*args)
@@ -12,19 +13,28 @@ if 'DEBUG_EVENTLOOP' in os.environ and os.environ['DEBUG_EVENTLOOP'] == "1":
 else:
     debug_print = debug_print_off
 
+def fnmatch(path, pat):
+    if glob.has_magic(pat):
+        return False
+    if '/' in pat or '\\' in pat:
+        # todo
+        return False
+    path_ = [e.lower() for e in re.split('[\\\\/]', path)]
+    return pat.lower() in path_
+    
 def path_matches(path, include, exclude):
     name = os.path.basename(path)
     if include is not None and len(include) > 0:
         ok = False
         for pat in include:
-            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat):
+            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat) or fnmatch(path, pat):
                 ok = True
                 break
         if not ok:
             return False
     if exclude is not None:
         for pat in exclude:
-            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat):
+            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat) or fnmatch(path, pat):
                 return False
     return True
 
