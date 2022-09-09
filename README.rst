@@ -3,14 +3,13 @@ eventloop: Abstraction layer for filesystem events
 ==================================================
 
 Eventloop uses any of: `pyuv` or `PySide2` or `PyQt5` installed in the system 
-to provide uniform callback interface for filesystem events. And also timers.
+to provide callback interface for filesystem events. And also timers.
 
 Package intended to be a building block for utility scripts for recompiling 
 or pushing files or restarting tests.
 
 `pyuv` is used preferably as it's most efficient. `uv` is a library that 
-powers nodejs event loop. Imagine you can `fs.watch` in python. No need to 
-imagine, you can.
+powers nodejs event loop.
 
 Installing
 ==========
@@ -36,7 +35,6 @@ In simple case you can use `on_file_changed` decorator. It creates event loop, s
     from eventloop import on_file_changed
 
     if __name__ == "__main__":
-
         @on_file_changed("/path/to/dir")
         def your_handler(file_path):
             print(file_path)
@@ -85,14 +83,18 @@ For finer control over things you can use classes, first example can be rewriten
 
 `Schedule` caches (deduplicates) tasks appended within `timeout` interval, so for example three immediate consecutive `changed` events on same file end up in just one `Executor.execute(task)` call. `on_file_changed` decorator also uses `Schedule` to cache events.
 
+Cli
+===
+
+You can use onchange script in command line to execute commands 
+
+.. code-block:: shell
+
+    python -m eventloop.onchange D:\dev\app -- echo FILE
+    onchange D:\dev\app -- echo FILE
+    onchange D:\dev\app -i *.cpp *.ui --cwd D:\dev\app\build -- ninja ^&^& ctest
+
 License
 =======
 
 Eventloop is distributed under the terms of MIT license, check `LICENSE` file.
-
-Contributing
-============
-
-If you'd like to contribute, fork the project, make changes, and send a pull
-request. Have a look at the surrounding code and please, make yours look
-alike :-)
