@@ -11,5 +11,11 @@ setup(
     author_email="mugisbrows@gmail.com",
     url='https://github.com/mugiseyebrows/event-loop',
     description='Abstraction layer for filesystem events',
-    long_description = long_description
+    long_description = long_description,
+    install_requires = ['colorama'],
+    entry_points={
+        'console_scripts': [
+            'onchange = eventloop.onchange:main'
+        ]
+    },
 )

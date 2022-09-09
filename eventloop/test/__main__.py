@@ -1,7 +1,8 @@
-from . import EventLoop, SingleShotTimer, FileSystemWatch, Schedule, Timer
+
+from eventloop import EventLoop, SingleShotTimer, FileSystemWatch, Schedule, Timer
 from functools import partial
 import os
-from .base import Executor
+from eventloop.base import Executor
 
 def test_timer1():
 
@@ -87,7 +88,7 @@ def test_schedule():
 
     loop.start()
 
-if __name__ == "__main__":
+def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("test", choices=['timer1','timer2','watch','schedule'])
@@ -95,3 +96,5 @@ if __name__ == "__main__":
     func = globals()['test_' + args.test]
     func()
 
+if __name__ == "__main__":
+    main()
