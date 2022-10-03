@@ -123,7 +123,7 @@ class Schedule:
         timer.start(timeout, self.on_timeout)
         self._timer = timer
 
-def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recursive=True):
+def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recursive=True, terminate_after=None):
 
     def decorator(func):
 
@@ -141,12 +141,18 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recu
         schedule = Schedule(executor)
         watch.start(path, on_change, recursive=recursive, include=include, exclude=exclude)
 
+        terminate_timer = None
+        if terminate_after is not None:
+            terminate_timer = SingleShotTimer()
+            terminate_timer.start(terminate_after, loop_.stop)
+
         if loop is None:
             loop_.start()
         else:
             loop._handles.append(watch)
             loop._handles.append(schedule)
             loop._handles.append(executor)
+            loop._handles.append(terminate_timer)
 
         return func
     
