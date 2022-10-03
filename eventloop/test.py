@@ -1,3 +1,4 @@
+from .common import path_matches
 from . import EventLoop, on_file_changed
 import unittest
 import time
@@ -123,6 +124,11 @@ class TestEventLoop(unittest.TestCase):
             pjoin(tmp, "file.c"),
         ]
         self._test(tmp, ign, notign, recursive=False, include=['*.c'], exclude=None, expected=expected)
+
+    def test_path_matches(self):
+        self.assertEqual(path_matches('/tmp/tmpxmkx1p7f/ign', include=['*.c'], exclude=['ign']), False)
+        self.assertEqual(path_matches('/tmp/tmpxmkx1p7f/notign', include=['*.c'], exclude=['ign']), False)
+        self.assertEqual(path_matches('/tmp/tmpxmkx1p7f/notign', include=None, exclude=['ign']), True)
 
 if __name__ == "__main__":
     unittest.main()
