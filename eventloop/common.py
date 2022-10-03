@@ -1,6 +1,7 @@
 import os
 import glob
 import re
+import sys
 
 if os.environ.get('DEBUG_EVENTLOOP') == "1":
     debug_print = print
@@ -8,13 +9,18 @@ else:
     debug_print = lambda *args, **kwargs: None
 
 def fnmatch(path, pat):
+    #debug_print('fnmatch(path, pat)', path, pat)
     if glob.has_magic(pat):
         return False
     if '/' in pat or '\\' in pat:
         # todo
         return False
-    path_ = [e.lower() for e in re.split('[\\\\/]', path)]
-    return pat.lower() in path_
+    if sys.platform == 'win32':
+        path_ = [e.lower() for e in re.split('[\\\\/]', path)]
+        return pat.lower() in path_
+    else:
+        path_ = [e for e in re.split('[\\\\/]', path)]
+        return pat in path_
     
 def path_matches(path, include, exclude):
     name = os.path.basename(path)
