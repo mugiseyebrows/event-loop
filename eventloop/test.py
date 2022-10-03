@@ -13,9 +13,10 @@ def modify_files(paths):
     for path in paths:
         dirname = os.path.dirname(path)
         os.makedirs(dirname, exist_ok=True)
+        time.sleep(0.1)
         with open(path, 'a') as f:
             f.write('bump')
-        time.sleep(0.01)
+        time.sleep(0.1)
 
 def rmfiles(paths):
     for path in paths:
