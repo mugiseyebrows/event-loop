@@ -92,7 +92,7 @@ You can use onchange script in command line to execute commands
 
     python -m eventloop.onchange D:\dev\app -- echo FILE
     onchange D:\dev\app -- echo FILE
-    onchange D:\dev\app -i *.cpp *.ui --cwd D:\dev\app\build -- ninja ^&^& ctest
+    onchange D:\dev\app -i *.cpp *.ui -e build --cwd D:\dev\app\build -- ninja ^&^& ctest
 
 License
 =======
