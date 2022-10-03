@@ -57,9 +57,6 @@ class FileSystemWatch(base.FileSystemWatch):
 
     def start(self, path, callback, include = None, exclude = None, recursive = False):
         super().start(path, callback, include, exclude, recursive)
-        if sys.platform not in ['win32','darwin'] and recursive:
-            print("Warning: recursive not implemented for this platform")
-            # TODO: workaround for recursive
         loop = pyuv.Loop.default_loop()
 
         if glob.has_magic(path):
@@ -91,7 +88,21 @@ class FileSystemWatch(base.FileSystemWatch):
             filename = filename.lstrip('\\') # 
             path = os.path.join(handle.path, filename)
             if os.path.isdir(path):
+                # workaround for platforms without recursive support
+                if sys.platform not in ['win32', 'darwin'] and self._recursive:
+                    if path_matches(path, None, self._exclude):
+                        for handle in self._handles:
+                            if handle.path == path:
+                                return
+                        flags = 0
+                        loop = pyuv.Loop.default_loop()
+                        new_handle = pyuv.fs.FSEvent(loop)
+                        new_handle.start(path, flags, self.onChanged)
+                        new_handle.ref = False
+                        self._handles.append(new_handle)
+                        debug_print('install handle for {}'.format(path))
                 return
+
             if not path_matches(path, self._include, self._exclude):
                 return
         else:
