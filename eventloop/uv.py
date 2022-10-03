@@ -81,11 +81,16 @@ class FileSystemWatch(base.FileSystemWatch):
     def stop(self):
         pass
 
-    def onChanged(self, handle, filename, events, error):
+    def onChanged(self, handle, filename: str, events, error):
         events_ = []
 
         if os.path.isdir(handle.path):
+            #debug_print('handle.path', handle.path)
+            #debug_print('filename', filename)
+            filename = filename.lstrip('\\') # 
             path = os.path.join(handle.path, filename)
+            if os.path.isdir(path):
+                return
             if not path_matches(path, self._include, self._exclude):
                 return
         else:
