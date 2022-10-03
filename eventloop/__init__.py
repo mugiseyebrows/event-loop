@@ -56,6 +56,7 @@ elif has_PySide2 or has_PyQt5:
 """
 
 def EventLoop(app = None):
+    debug_print("EventLoop created")
     if has_pyuv:
         return uv.EventLoop()
     elif has_PySide2 or has_PyQt5:
