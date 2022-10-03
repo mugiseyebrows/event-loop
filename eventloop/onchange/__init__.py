@@ -5,6 +5,7 @@ from eventloop import on_file_changed
 import datetime
 from colorama import Fore, Back, Style, init as colorama_init
 import os
+import sys
 import shutil
 
 # set DEBUG_ONCHANGE=1
@@ -26,12 +27,13 @@ def split(vs, sep):
             r.append(v)
     yield r
 
+WIN_BUILTINS = ['echo', 'dir', 'type']
+
 def replace(cmd_orig, path):
     cmd = cmd_orig[:]
-    if cmd[0] in ['echo', 'dir']:
+    if sys.platform == 'win32' and cmd[0] in WIN_BUILTINS:
         cmd = ['cmd','/c'] + cmd
-    if 'FILE' in cmd:
-        cmd[cmd.index('FILE')] = path
+    cmd = [path if arg == 'FILE' else arg for arg in cmd]
     return cmd
 
 def now_str():
@@ -56,13 +58,14 @@ examples:
     parser.add_argument('-i','--include', nargs='+', help="include globs")
     parser.add_argument('-e','--exclude', nargs='+', help="exclude globs")
     parser.add_argument('-c','--cwd', help='cwd for command')
+    parser.add_argument('-t', '--timeout', type=float, default=1)
     parser.add_argument('cmd', nargs='+', help="command to execute")
     args = parser.parse_args()
     cmds = list(split(args.cmd, '&&'))
 
     for cmd in cmds:
         executable = cmd[0]
-        if executable in ['echo', 'dir']:
+        if sys.platform == 'win32' and executable in WIN_BUILTINS:
             pass
         elif os.path.isfile(executable):
             pass
@@ -74,7 +77,7 @@ examples:
 
     debug_print("cmds", cmds)
 
-    @on_file_changed(args.src, include=args.include, exclude=args.exclude)
+    @on_file_changed(args.src, include=args.include, exclude=args.exclude, timeout=args.timeout)
     def handler(path):
         debug_print("handler for {}".format(path))
         for cmd in cmds:
