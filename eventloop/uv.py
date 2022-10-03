@@ -83,9 +83,10 @@ class FileSystemWatch(base.FileSystemWatch):
         events_ = []
 
         if os.path.isdir(handle.path):
-            #debug_print('handle.path', handle.path)
-            #debug_print('filename', filename)
-            filename = filename.lstrip('\\') # 
+            
+            if sys.platform == 'win32':
+                filename = filename.lstrip('\\')
+
             path = os.path.join(handle.path, filename)
             if os.path.isdir(path):
                 # workaround for platforms without recursive support
