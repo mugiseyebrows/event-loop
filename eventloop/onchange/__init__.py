@@ -11,7 +11,7 @@ import shutil
 # set DEBUG_ONCHANGE=0
 # DEBUG_ONCHANGE=1
 # DEBUG_ONCHANGE=0
-if 'DEBUG_ONCHANGE' in os.environ and os.environ['DEBUG_ONCHANGE'] == "1":
+if os.environ.get('DEBUG_ONCHANGE') == "1":
     debug_print = print
 else:
     debug_print = lambda *args, **kwargs: None
