@@ -34,3 +34,5 @@ class EventLoop(base.EventLoop):
         
     def stop(self):
         QtCore.QCoreApplication.quit()
+        self._app = None
+        self._loop = None

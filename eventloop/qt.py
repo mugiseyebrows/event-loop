@@ -1,6 +1,6 @@
 from . import base
 import signal
-from .common import walk, EVENT_CHANGE, debug_print, path_matches
+from .common import debug_print, walk, EVENT_CHANGE, debug_print, path_matches
 import glob
 import os
 
@@ -38,9 +38,13 @@ class EventLoop(base.EventLoop):
     def start(self):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self._app.exec_()
+        debug_print("EventLoop started")
         
     def stop(self):
-        QtCore.QCoreApplication.quit()
+        if self._app:
+            self._app.exit()
+            self._app = None
+            debug_print("EventLoop stoped")
 
 class Timer(base.Timer):
 
