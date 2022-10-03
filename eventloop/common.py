@@ -26,15 +26,33 @@ def path_matches(path, include, exclude):
     name = os.path.basename(path)
     if include is not None and len(include) > 0:
         ok = False
+        #debug_print("name path include", name, path, include)
         for pat in include:
-            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat) or fnmatch(path, pat):
+            if glob.fnmatch.fnmatch(name, pat):
+                #debug_print("ok = True")
+                #debug_print("glob.fnmatch.fnmatch(name, pat)", name, pat)
+                ok = True
+                break
+            if glob.fnmatch.fnmatch(path, pat):
+                #debug_print("ok = True")
+                #debug_print("glob.fnmatch.fnmatch(path, pat)", path, pat)
+                ok = True
+                break
+            if fnmatch(path, pat):
+                #debug_print("ok = True")
+                #debug_print("fnmatch(path, pat)", path, pat)
                 ok = True
                 break
         if not ok:
+            #debug_print("not ok")
             return False
     if exclude is not None:
         for pat in exclude:
-            if glob.fnmatch.fnmatch(name, pat) or glob.fnmatch.fnmatch(path, pat) or fnmatch(path, pat):
+            if glob.fnmatch.fnmatch(name, pat):
+                return False
+            if glob.fnmatch.fnmatch(path, pat):
+                return False
+            if fnmatch(path, pat):
                 return False
     return True
 
