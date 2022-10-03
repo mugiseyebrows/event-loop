@@ -1,0 +1,1 @@
+DEBUG_EVENTLOOP=1 USE_PYUV=0 USE_PYSIDE2=1 USE_PYQT5=0 python3 -m eventloop.test
