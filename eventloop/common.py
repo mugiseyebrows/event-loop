@@ -2,16 +2,10 @@ import os
 import glob
 import re
 
-def debug_print_on(*args):
-    print(*args)
-
-def debug_print_off(*args):
-    pass
-
-if 'DEBUG_EVENTLOOP' in os.environ and os.environ['DEBUG_EVENTLOOP'] == "1":
-    debug_print = debug_print_on
+if os.environ.get('DEBUG_EVENTLOOP') == "1":
+    debug_print = print
 else:
-    debug_print = debug_print_off
+    debug_print = lambda *args, **kwargs: None
 
 def fnmatch(path, pat):
     if glob.has_magic(pat):
