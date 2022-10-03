@@ -9,21 +9,33 @@ from . import uv
 from . import qt
 from . import qta
 
-try:
+if os.environ.get('USE_PYUV') == '1':
     import pyuv
     debug_print("using pyuv")
-except ImportError:
+elif os.environ.get('USE_PYSIDE2') == '1':
+    import PySide2
+    from PySide2 import QtCore
+    debug_print("using PySide2")
+elif os.environ.get('USE_PYQT5') == '1':
+    import PyQt5
+    from PyQt5 import QtCore
+    debug_print("using PyQt5")
+else:
     try:
-        import PySide2
-        from PySide2 import QtCore
-        debug_print("using PySide2")
+        import pyuv
+        debug_print("using pyuv")
     except ImportError:
         try:
-            import PyQt5
-            from PyQt5 import QtCore
-            debug_print("using PyQt5")
+            import PySide2
+            from PySide2 import QtCore
+            debug_print("using PySide2")
         except ImportError:
-            raise Exception("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found")
+            try:
+                import PyQt5
+                from PyQt5 import QtCore
+                debug_print("using PyQt5")
+            except ImportError:
+                raise Exception("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found")
 
 try:
     import qasync
