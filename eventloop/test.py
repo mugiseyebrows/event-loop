@@ -61,7 +61,7 @@ class TestEventLoop(unittest.TestCase):
         proc = Process(target=modify_files, args=(paths,))
         proc.start()
         changed = []
-        @on_file_changed(tmp, timeout=0.1, terminate_after=2)
+        @on_file_changed(tmp, timeout=0.3, terminate_after=2)
         def handler(path):
             changed.append(path)
         proc.join()
