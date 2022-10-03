@@ -82,6 +82,8 @@ class FileSystemWatch(base.FileSystemWatch):
     def onChanged(self, handle, filename: str, events, error):
         events_ = []
 
+        #debug_print('handle.path', handle.path, 'filename', filename)
+
         if os.path.isdir(handle.path):
             
             if sys.platform == 'win32':
