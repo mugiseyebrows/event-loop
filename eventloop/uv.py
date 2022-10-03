@@ -1,4 +1,3 @@
-
 from . import base
 from .common import debug_print, path_matches, EVENT_RENAME, EVENT_CHANGE
 import signal
@@ -18,10 +17,12 @@ class EventLoop(base.EventLoop):
         handle = pyuv.Signal(loop)
         handle.start(lambda handle, signum: handle.close(), signal.SIGINT)
         loop.run()
+        debug_print("EventLoop started")
 
     def stop(self):
         loop = pyuv.Loop.default_loop()
         loop.stop()
+        debug_print("EventLoop stoped")
 
 class Timer(base.Timer):
     def start(self, interval, callback, once = False):
