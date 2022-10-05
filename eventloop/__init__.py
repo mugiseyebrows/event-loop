@@ -1,6 +1,4 @@
 import os
-import signal
-import glob
 import sys
 
 from .common import debug_print, walk
@@ -9,78 +7,87 @@ from . import uv
 from . import qt
 from . import qta
 
+(
+    FLAVOUR_NONE,
+    FLAVOUR_PYUV,
+    FLAVOUR_PYSIDE2,
+    FLAVOUR_QT5,
+    FLAVOUR_PYSIDE2_QASYNC,
+    FLAVOUR_QT5_QASYNC
+) = range(6)
+
+flavour = FLAVOUR_NONE
+
 if os.environ.get('USE_PYUV') == '1':
     import pyuv
-    debug_print("using pyuv")
+    flavour = FLAVOUR_PYUV
 elif os.environ.get('USE_PYSIDE2') == '1':
-    import PySide2
     from PySide2 import QtCore
-    debug_print("using PySide2")
+    flavour = FLAVOUR_PYSIDE2
 elif os.environ.get('USE_PYQT5') == '1':
-    import PyQt5
     from PyQt5 import QtCore
-    debug_print("using PyQt5")
+    flavour = FLAVOUR_QT5
 else:
     try:
         import pyuv
-        debug_print("using pyuv")
+        flavour = FLAVOUR_PYUV
     except ImportError:
         try:
-            import PySide2
             from PySide2 import QtCore
-            debug_print("using PySide2")
+            flavour = FLAVOUR_PYSIDE2
         except ImportError:
             try:
-                import PyQt5
                 from PyQt5 import QtCore
-                debug_print("using PyQt5")
+                flavour = FLAVOUR_QT5
             except ImportError:
                 raise Exception("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found")
 
-try:
-    import qasync
-    debug_print("using qasync")
-except ImportError:
-    pass
+if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_QT5]:
+    if os.environ.get('USE_QASYNC') == '1':
+        import qasync
+        if flavour == FLAVOUR_PYSIDE2:
+            flavour = FLAVOUR_PYSIDE2_QASYNC
+        else:
+            flavour = FLAVOUR_QT5_QASYNC
+    elif os.environ.get('USE_QASYNC') == '0':
+        pass
+    else:
+        try:
+            import qasync
+            if flavour == FLAVOUR_PYSIDE2:
+                flavour = FLAVOUR_PYSIDE2_QASYNC
+            else:
+                flavour = FLAVOUR_QT5_QASYNC
+        except ImportError:
+            pass
 
-has_pyuv = 'pyuv' in globals()
-has_PySide2 = 'PySide2' in globals()
-has_PyQt5 = 'PyQt5' in globals()
-has_qasync = 'qasync' in globals()
-
-""" template
-if has_pyuv:
-    pass
-elif has_PySide2 or has_PyQt5:
-    pass
-"""
 
 def EventLoop(app = None):
-    debug_print("EventLoop created")
-    if has_pyuv:
-        return uv.EventLoop()
-    elif has_PySide2 or has_PyQt5:
-        if has_qasync:
-            return qta.EventLoop(app)
-        else:    
-            return qt.EventLoop(app)
+    return {
+        FLAVOUR_NONE: lambda app: print("eventloop needs one of: pyuv or PySide2 or PyQt5 packages to work, none found"),
+        FLAVOUR_PYUV: lambda app: uv.EventLoop(),
+        FLAVOUR_PYSIDE2: lambda app: qt.EventLoop(app),
+        FLAVOUR_QT5: lambda app: qt.EventLoop(app),
+        FLAVOUR_PYSIDE2_QASYNC: lambda app: qta.EventLoop(app),
+        FLAVOUR_QT5_QASYNC: lambda app: qta.EventLoop(app),
+    }[flavour](app)
 
 def FileSystemWatch():
-    if has_pyuv:
+    if flavour == FLAVOUR_PYUV:
         return uv.FileSystemWatch()
-    elif has_PySide2 or has_PyQt5:
+    else:
         return qt.FileSystemWatch()
 
 def SingleShotTimer():
-    if has_pyuv:
+    if flavour == FLAVOUR_PYUV:
         return uv.SingleShotTimer()
-    elif has_PySide2 or has_PyQt5:
+    else:
         return qt.SingleShotTimer()
 
 def Timer():
-    if has_pyuv:
+    if flavour == FLAVOUR_PYUV:
         return uv.Timer()
-    elif has_PySide2 or has_PyQt5:
+    else:
         return qt.Timer()
 
 class Schedule:
