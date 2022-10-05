@@ -1,3 +1,4 @@
+import sys
 from .common import path_matches
 from . import EventLoop, on_file_changed
 import unittest
@@ -7,6 +8,13 @@ from multiprocessing import Process
 import os
 
 pjoin = os.path.join
+
+def mkdtemp():
+    tmp = tempfile.mkdtemp()
+    if sys.platform == 'win32':
+        # errors in pyuv on windows with cyrilic usernames
+        return os.path.realpath(tmp)
+    return tmp
 
 def modify_files(paths):
     time.sleep(0.1)
@@ -27,7 +35,7 @@ def rmfiles(paths):
 
 class TestEventLoop(unittest.TestCase):
     def test_terminate(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         #print(tmp)
         t1 = time.time()
         @on_file_changed(tmp, terminate_after=2)
@@ -38,7 +46,7 @@ class TestEventLoop(unittest.TestCase):
         os.rmdir(tmp)
 
     def test_create(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         paths = [pjoin(tmp, "file.c")]
         proc = Process(target=modify_files, args=(paths,))
         proc.start()
@@ -53,7 +61,7 @@ class TestEventLoop(unittest.TestCase):
         self.assertEqual(changed, expected)
 
     def test_deduplicate(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         paths = [
             pjoin(tmp, "file.c"),
             pjoin(tmp, "file.c"),
@@ -97,7 +105,7 @@ class TestEventLoop(unittest.TestCase):
         self.assertEqual(changed, expected)
 
     def test_recursive1(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         ign = os.path.join(tmp, 'ign')
         notign = os.path.join(tmp, 'notign')
         expected = [
@@ -108,7 +116,7 @@ class TestEventLoop(unittest.TestCase):
         self._test(tmp, ign, notign, recursive=True, include=None, exclude=['*.o', 'ign'], expected=expected)
         
     def test_recursive2(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         ign = os.path.join(tmp, 'ign')
         notign = os.path.join(tmp, 'notign')
         expected = [
@@ -118,7 +126,7 @@ class TestEventLoop(unittest.TestCase):
         self._test(tmp, ign, notign, recursive=True, include=['*.c'], exclude=['ign'], expected=expected)
 
     def test_not_recursive(self):
-        tmp = tempfile.mkdtemp()
+        tmp = mkdtemp()
         ign = os.path.join(tmp, 'ign')
         notign = os.path.join(tmp, 'notign')
         expected = [
