@@ -27,12 +27,11 @@ class EventLoop(base.EventLoop):
 
     def __init__(self, app = None):
         super().__init__()
+        debug_print("qt.EventLoop")
         if app is None:
-            instance = QtCore.QCoreApplication.instance()
-            if instance is not None:
-                app = instance
-            else:
-                app = QtCore.QCoreApplication([])
+            app = QtCore.QCoreApplication.instance()
+        if app is None:
+            app = QtCore.QCoreApplication([])
         self._app = app
 
     def start(self):

@@ -21,6 +21,9 @@ class EventLoop(base.EventLoop):
 
     def __init__(self, app = None):
         super().__init__()
+        debug_print("qta.EventLoop")
+        if app is None:
+            app = QtCore.QCoreApplication.instance()
         if app is None:
             app = QtCore.QCoreApplication([])
         loop = qasync.QEventLoop(app)
