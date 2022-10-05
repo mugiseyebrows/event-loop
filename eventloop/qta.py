@@ -1,18 +1,26 @@
 import signal
 from . import base
+from .common import debug_print
+import os
 
-try:
-    import PySide2
+if os.environ.get('USE_PYSIDE2') == '1':
     from PySide2 import QtCore
-except ImportError:
+elif os.environ.get('USE_PYQT5') == '1':
+    from PyQt5 import QtCore
+else:
     try:
-        import PyQt5
-        from PyQt5 import QtCore
+        from PySide2 import QtCore
     except ImportError:
-        pass
-
+        try:
+            from PyQt5 import QtCore
+        except ImportError:
+            pass
 try:
     import asyncio
+except ImportError:
+    pass
+
+try:
     import qasync
 except ImportError:
     pass

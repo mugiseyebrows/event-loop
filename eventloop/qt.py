@@ -5,20 +5,14 @@ import glob
 import os
 
 if os.environ.get('USE_PYSIDE2') == '1':
-    import PySide2
     from PySide2 import QtCore
-    debug_print("using PySide2")
 elif os.environ.get('USE_PYQT5') == '1':
-    import PyQt5
     from PyQt5 import QtCore
-    debug_print("using PyQt5")
 else:
     try:
-        import PySide2
         from PySide2 import QtCore
     except ImportError:
         try:
-            import PyQt5
             from PyQt5 import QtCore
         except ImportError:
             pass
