@@ -36,6 +36,7 @@ class EventLoop(base.EventLoop):
         self._loop.run_forever()
         
     def stop(self):
-        QtCore.QCoreApplication.quit()
-        self._app = None
-        self._loop = None
+        if self._app:
+            self._app.exit()
+            self._app = None
+            debug_print("EventLoop stoped")
