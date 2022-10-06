@@ -125,6 +125,12 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
 
 flavour = FLAVOUR_NONE
 
+test = {n: os.environ.get(n) for n in ['USE_PYUV', 'USE_PYSIDE2', 'USE_PYQT5']}
+ones = [v for v in test.values() if v == '1']
+if len(ones) > 1:
+    keys = [k for k in test.keys() if test[k] == '1']
+    print("warning: {} env variables are set to 1, you should only set one of them".format(" and ".join(keys)))
+
 if os.environ.get('USE_PYUV') == '1':
     import pyuv
     flavour = FLAVOUR_PYUV
