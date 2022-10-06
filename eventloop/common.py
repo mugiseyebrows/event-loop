@@ -113,3 +113,57 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
     EVENT_CHANGE
 ) = range(2)
 
+
+(
+    FLAVOUR_NONE,
+    FLAVOUR_PYUV,
+    FLAVOUR_PYSIDE2,
+    FLAVOUR_QT5,
+    FLAVOUR_PYSIDE2_QASYNC,
+    FLAVOUR_QT5_QASYNC
+) = range(6)
+
+flavour = FLAVOUR_NONE
+
+if os.environ.get('USE_PYUV') == '1':
+    import pyuv
+    flavour = FLAVOUR_PYUV
+elif os.environ.get('USE_PYSIDE2') == '1':
+    from PySide2 import QtCore
+    flavour = FLAVOUR_PYSIDE2
+elif os.environ.get('USE_PYQT5') == '1':
+    from PyQt5 import QtCore
+    flavour = FLAVOUR_QT5
+else:
+    try:
+        import pyuv
+        flavour = FLAVOUR_PYUV
+    except ImportError:
+        try:
+            from PySide2 import QtCore
+            flavour = FLAVOUR_PYSIDE2
+        except ImportError:
+            try:
+                from PyQt5 import QtCore
+                flavour = FLAVOUR_QT5
+            except ImportError:
+                raise Exception("eventloop needs one of: [pyuv, PySide2, PyQt5] packages to work, none found")
+
+if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_QT5]:
+    if os.environ.get('USE_QASYNC') == '1':
+        import qasync
+        if flavour == FLAVOUR_PYSIDE2:
+            flavour = FLAVOUR_PYSIDE2_QASYNC
+        else:
+            flavour = FLAVOUR_QT5_QASYNC
+    elif os.environ.get('USE_QASYNC') == '0':
+        pass
+    else:
+        try:
+            import qasync
+            if flavour == FLAVOUR_PYSIDE2:
+                flavour = FLAVOUR_PYSIDE2_QASYNC
+            else:
+                flavour = FLAVOUR_QT5_QASYNC
+        except ImportError:
+            pass

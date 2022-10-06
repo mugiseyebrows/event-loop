@@ -2,19 +2,15 @@ import signal
 from . import base
 from .common import debug_print
 import os
+from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
 
-if os.environ.get('USE_PYSIDE2') == '1':
+if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_PYSIDE2_QASYNC]:
     from PySide2 import QtCore
-elif os.environ.get('USE_PYQT5') == '1':
+elif flavour in [FLAVOUR_QT5, FLAVOUR_QT5_QASYNC]:
     from PyQt5 import QtCore
 else:
-    try:
-        from PySide2 import QtCore
-    except ImportError:
-        try:
-            from PyQt5 import QtCore
-        except ImportError:
-            pass
+    pass
+
 try:
     import asyncio
 except ImportError:
