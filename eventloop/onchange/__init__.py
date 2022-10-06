@@ -54,13 +54,15 @@ examples:
   onchange D:\\dev\\app -i *.cpp *.ui --cwd D:\\dev\\app\\build -- ninja ^&^& ctest
     """
     parser = argparse.ArgumentParser(prog="onchange", epilog=example_text, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('src', help="source directory or file")
+    parser.add_argument('src', help="directory or file to watch")
     parser.add_argument('-i','--include', nargs='+', help="include globs")
     parser.add_argument('-e','--exclude', nargs='+', help="exclude globs")
     parser.add_argument('-c','--cwd', help='cwd for command')
     parser.add_argument('-t', '--timeout', type=float, default=1)
+    parser.add_argument('-n', '--non-recursive', action='store_true', help="non recursive (do not look for changes in subdirectories)")
     parser.add_argument('cmd', nargs='+', help="command to execute")
     args = parser.parse_args()
+    #print(args); exit(0)
     cmds = list(split(args.cmd, '&&'))
 
     for cmd in cmds:
@@ -77,7 +79,9 @@ examples:
 
     debug_print("cmds", cmds)
 
-    @on_file_changed(args.src, include=args.include, exclude=args.exclude, timeout=args.timeout)
+    recursive = not args.non_recursive
+
+    @on_file_changed(args.src, recursive=recursive, include=args.include, exclude=args.exclude, timeout=args.timeout)
     def handler(path):
         debug_print("handler for {}".format(path))
         for cmd in cmds:
