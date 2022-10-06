@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 import locale
+import argparse
 
 try:
     import pyuv
@@ -94,17 +95,29 @@ async def main():
     has_PyQt5 = sys.modules.get('PyQt5') is not None
     has_qasync = sys.modules.get('qasync') is not None
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('names', nargs='+', choices=['pyuv','qt5','pyside2','qt5a','pyside2a','all'])
+    args = parser.parse_args()
+    #print(args); exit(0)
+    names = args.names
+
+    do_pyuv = has_pyuv and ('all' in names or 'pyuv' in names)
+    do_PySide2 = has_PySide2 and ('all' in names or 'pyside2' in names)
+    do_PySide2_qasync = has_PySide2 and has_qasync and ('all' in names or 'pyside2a' in names)
+    do_PyQt5 = has_PyQt5 and ('all' in names or 'qt5' in names)
+    do_PyQt5_qasync = has_PyQt5 and has_qasync and ('all' in names or 'qt5a' in names)
+
     coros = []
-    if has_pyuv:
+    if do_pyuv:
         coros.append(run_test('env_pyuv', env_pyuv, quiet))
-    if has_PySide2:
+    if do_PySide2:
         coros.append(run_test('env_pyside2', env_pyside2, quiet))
-        if has_qasync:
-            coros.append(run_test('env_pyside2_qasync', env_pyside2_qasync, quiet))
-    if has_PyQt5:
+    if do_PySide2_qasync:
+        coros.append(run_test('env_pyside2_qasync', env_pyside2_qasync, quiet))
+    if do_PyQt5:
         coros.append(run_test('env_pyqt5', env_pyqt5, quiet))
-        if has_qasync:
-            coros.append(run_test('env_pyqt5_qasync', env_pyqt5_qasync, quiet))
+    if do_PyQt5_qasync:
+        coros.append(run_test('env_pyqt5_qasync', env_pyqt5_qasync, quiet))
     
     print("{} envs to test".format(len(coros)))
     await asyncio.gather(*coros)
