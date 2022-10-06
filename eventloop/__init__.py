@@ -72,11 +72,11 @@ def EventLoop(app = None):
         FLAVOUR_QT5_QASYNC: lambda app: qta.EventLoop(app),
     }[flavour](app)
 
-def FileSystemWatch():
+def FileSystemWatch(loop):
     if flavour == FLAVOUR_PYUV:
-        return uv.FileSystemWatch()
+        return uv.FileSystemWatch(loop)
     else:
-        return qt.FileSystemWatch()
+        return qt.FileSystemWatch(loop)
 
 def SingleShotTimer():
     if flavour == FLAVOUR_PYUV:
@@ -145,7 +145,7 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recu
 
         executor = base.FuncExecutor(func)
         
-        watch = FileSystemWatch()
+        watch = FileSystemWatch(loop_)
         schedule = Schedule(executor)
         watch.start(path, on_change, recursive=recursive, include=include, exclude=exclude)
 
@@ -156,11 +156,11 @@ def on_file_changed(path, include=None, exclude=None, timeout=1, loop=None, recu
 
         if loop is None:
             loop_.start()
-        else:
-            loop._handles.append(watch)
-            loop._handles.append(schedule)
-            loop._handles.append(executor)
-            loop._handles.append(terminate_timer)
+        
+        loop_._handles.append(watch)
+        loop_._handles.append(schedule)
+        loop_._handles.append(executor)
+        loop_._handles.append(terminate_timer)
 
         return func
     

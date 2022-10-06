@@ -24,6 +24,9 @@ class EventLoop(base.EventLoop):
         loop.stop()
         debug_print("EventLoop stoped")
 
+    def addWatcher(self, watcher):
+        pass
+
 class Timer(base.Timer):
     def start(self, interval, callback, once = False):
         super().start(interval, callback, once)
@@ -54,6 +57,10 @@ class SingleShotTimer(Timer):
         super().start(timeout, callback, True)
 
 class FileSystemWatch(base.FileSystemWatch):
+
+    def __init__(self, loop):
+        super().__init__()
+        self._loop = loop
 
     def start(self, path, callback, include = None, exclude = None, recursive = False):
         super().start(path, callback, include, exclude, recursive)

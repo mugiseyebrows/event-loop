@@ -21,6 +21,7 @@ class EventLoop(base.EventLoop):
 
     def __init__(self, app = None):
         super().__init__()
+        self._watchers = []
         debug_print("qt.EventLoop")
         if app is None:
             app = QtCore.QCoreApplication.instance()
@@ -32,8 +33,20 @@ class EventLoop(base.EventLoop):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self._app.exec_()
         debug_print("EventLoop started")
+
+    def addWatcher(self, watcher):
+        self._watchers.append(watcher)
         
+    def _cleanWatchers(self):
+        watcher: QtCore.QFileSystemWatcher
+        for watcher in self._watchers:
+            paths = watcher.files() + watcher.directories()
+            if len(paths):
+                watcher.removePaths(paths)
+        self._watchers = []
+
     def stop(self):
+        self._cleanWatchers()
         if self._app:
             self._app.exit()
             self._app = None
@@ -64,10 +77,15 @@ class SingleShotTimer(Timer):
 
 class FileSystemWatch(base.FileSystemWatch):
 
+    def __init__(self, loop):
+        super().__init__()
+        self._loop = loop
+
     def start(self, path, callback, include = None, exclude = None, recursive = False):
         super().start(path, callback, include, exclude, recursive)
         watcher = QtCore.QFileSystemWatcher()
         self._watch = watcher
+        self._loop.addWatcher(watcher)
 
         if not recursive:
             if glob.has_magic(path):

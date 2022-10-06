@@ -38,13 +38,29 @@ class EventLoop(base.EventLoop):
         asyncio.set_event_loop(loop)
         self._app = app
         self._loop = loop
+        self._watchers = []
 
     def start(self):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self._loop.run_forever()
-        
+
+    def addWatcher(self, watcher):
+        self._watchers.append(watcher)
+
+    def _cleanWatchers(self):
+        watcher: QtCore.QFileSystemWatcher
+        for watcher in self._watchers:
+            paths = watcher.files() + watcher.directories()
+            if len(paths):
+                watcher.removePaths(paths)
+        self._watchers = []
+
     def stop(self):
+        self._cleanWatchers()
         if self._app:
-            self._app.exit()
             self._app = None
-            debug_print("EventLoop stoped")
+            
+        if self._loop:
+            self._loop.stop()
+            self._loop = None
+        debug_print("EventLoop stoped")
