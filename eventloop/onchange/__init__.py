@@ -8,6 +8,22 @@ import os
 import sys
 import shutil
 
+try:
+    import beepy
+except ImportError:
+    pass
+
+def beep_success():
+    if 'beepy' in sys.modules:
+        beepy.beep('coin')
+    else:
+        print('\a')
+
+def beep_error():
+    if 'beepy' in sys.modules:
+        beepy.beep('error')
+
+
 # set DEBUG_ONCHANGE=1
 # set DEBUG_ONCHANGE=0
 # DEBUG_ONCHANGE=1
@@ -27,7 +43,7 @@ def split(vs, sep):
             r.append(v)
     yield r
 
-WIN_BUILTINS = ['echo', 'dir', 'type']
+WIN_BUILTINS = ['echo', 'dir', 'type', 'rmdir']
 
 def replace(cmd_orig, path):
     cmd = cmd_orig[:]
@@ -52,9 +68,11 @@ examples:
   python -m eventloop.onchange D:\\dev\\app -- echo FILE
   onchange D:\\dev\\app -- echo FILE
   onchange D:\\dev\\app -i *.cpp *.ui --cwd D:\\dev\\app\\build -- ninja ^&^& ctest
+  onchange ~/dev/app -i "*.pyx" --beep -- python setup.py build_ext --inplace
     """
     parser = argparse.ArgumentParser(prog="onchange", epilog=example_text, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('src', help="directory or file to watch")
+    parser.add_argument('--beep', action='store_true', help='beep when done')
     parser.add_argument('-i','--include', nargs='+', help="include globs")
     parser.add_argument('-e','--exclude', nargs='+', help="exclude globs")
     parser.add_argument('-c','--cwd', help='cwd for command')
@@ -84,13 +102,20 @@ examples:
     @on_file_changed(args.src, recursive=recursive, include=args.include, exclude=args.exclude, timeout=args.timeout)
     def handler(path):
         debug_print("handler for {}".format(path))
+        success = True
         for cmd in cmds:
             cmd = replace(cmd, path)
             debug_print("cmd", cmd)
             try:
                 proc = subprocess.run(cmd, cwd=args.cwd)
                 if proc.returncode != 0:
+                    success = False
                     break
             except FileNotFoundError as e:
                 logger.print_error("{} not found".format(cmd[0]))
                 break
+        if args.beep:
+            if success:
+                beep_success()
+            else:
+                beep_error()
