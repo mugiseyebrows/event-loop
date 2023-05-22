@@ -4,6 +4,7 @@ from .common import debug_print, walk, EVENT_CHANGE, debug_print, path_matches
 import glob
 import os
 from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
+import sys
 
 if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_PYSIDE2_QASYNC]:
     from PySide2 import QtCore
@@ -127,3 +128,74 @@ class FileSystemWatch(base.FileSystemWatch):
 
     def stop(self):
         pass
+
+class Server(QtCore.QObject):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self._process = None
+        self._terminated = None
+        
+    def restart(self, cmd, cwd = None):
+        process = self._process
+        if process is not None:
+            if process.state() == QtCore.QProcess.ProcessState.Running:
+                debug_print("terminating", process)
+                process.kill()
+                self._terminated = process
+            self._process = None
+
+        debug_print("Server.start cmd", cmd)
+
+        process = QtCore.QProcess()
+        process.setProgram(cmd[0])
+        process.setArguments(cmd[1:])
+        if cwd is not None:
+            process.setWorkingDirectory(cwd)
+        
+        process.readyReadStandardOutput.connect(self.onStdOut)
+        process.readyReadStandardError.connect(self.onStdErr)
+        process.started.connect(self.onStarted)
+        
+        process.error.connect(self.onError)
+
+        process.finished.connect(self.onFinished)
+
+        process.start(QtCore.QIODevice.OpenModeFlag.ReadOnly)
+
+        #debug_print("readChannelCount", process.readChannelCount())
+
+        self._process = process
+
+        debug_print("state", process.state())
+
+        #QtCore.QTimer.singleShot(1000, lambda: debug_print("state", process.state()))
+        #QtCore.QTimer.singleShot(1000, self.onStdErr)
+        #QtCore.QTimer.singleShot(1000, self.onStdOut)
+    
+    def onError(self, code):
+        debug_print("error", code)
+
+    def onStarted(self):
+        process = self._process
+        debug_print(process, "started")
+
+    def onFinished(self):
+        debug_print("onFinished")
+
+    def onStdOut(self):
+        debug_print("onStdOut")
+        process = self._process
+        if process is None:
+            return
+        data = process.readAllStandardOutput()
+        sys.stdout.buffer.write(data.data())
+        sys.stdout.buffer.flush()
+        
+    def onStdErr(self):
+        debug_print("onStdErr")
+        process = self._process
+        if process is None:
+            return
+        data = process.readAllStandardError()
+        sys.stderr.buffer.write(data.data())
+        sys.stderr.buffer.flush()

@@ -23,6 +23,18 @@ def EventLoop(app = None):
         FLAVOUR_QT5_QASYNC: lambda app: qta.EventLoop(app),
     }[flavour](app)
 
+def Server(app = None, parent = None):
+    def not_implemented(app, parent):
+        raise Exception("Not implemented for flavour {}".format(flavour))
+    return {
+        FLAVOUR_NONE: not_implemented,
+        FLAVOUR_PYUV: not_implemented,
+        FLAVOUR_PYSIDE2: lambda app, parent: qt.Server(parent),
+        FLAVOUR_QT5: lambda app, parent: qt.Server(parent),
+        FLAVOUR_PYSIDE2_QASYNC: not_implemented,
+        FLAVOUR_QT5_QASYNC: not_implemented,
+    }[flavour](app, parent)
+
 def FileSystemWatch(loop):
     if flavour == FLAVOUR_PYUV:
         return uv.FileSystemWatch(loop)
