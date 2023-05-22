@@ -8,6 +8,11 @@ from . import qt
 from . import qta
 from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
 
+"""
+set DEBUG_EVENTLOOP=1
+set DEBUG_EVENTLOOP=0
+"""
+
 def EventLoop(app = None):
     return {
         FLAVOUR_NONE: lambda app: None,
