@@ -14,7 +14,6 @@ try:
     import chime
     chime.theme('big-sur')
 except ImportError:
-    print("`pip install chime` for better sound notifications")
     pass
 
 def beep_success():
@@ -107,6 +106,9 @@ examples:
     debug_print("cmds", cmds)
 
     recursive = not args.non_recursive
+
+    if args.beep and 'chime' not in sys.modules:
+        print("install chime for better sound notifications\n  pip install chime")
 
     if args.server:
 
