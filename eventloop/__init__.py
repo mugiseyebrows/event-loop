@@ -24,15 +24,18 @@ def EventLoop(app = None):
     }[flavour](app)
 
 def Server(app = None, parent = None):
-    def not_implemented(app, parent):
-        raise Exception("Not implemented for flavour {}".format(flavour))
+
+    def psutil_server(app, parent):
+        from . import ps
+        return ps.Server()
+
     return {
-        FLAVOUR_NONE: not_implemented,
-        FLAVOUR_PYUV: not_implemented,
+        FLAVOUR_NONE: psutil_server,
+        FLAVOUR_PYUV: psutil_server,
         FLAVOUR_PYSIDE2: lambda app, parent: qt.Server(parent),
         FLAVOUR_QT5: lambda app, parent: qt.Server(parent),
-        FLAVOUR_PYSIDE2_QASYNC: not_implemented,
-        FLAVOUR_QT5_QASYNC: not_implemented,
+        FLAVOUR_PYSIDE2_QASYNC: psutil_server,
+        FLAVOUR_QT5_QASYNC: psutil_server,
     }[flavour](app, parent)
 
 def FileSystemWatch(loop):
