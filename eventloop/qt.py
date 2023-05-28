@@ -141,7 +141,7 @@ class Server(QtCore.QObject):
         self._process = None
         self._terminated = None
         
-    def restart(self, cmd: list[str], cwd = None):
+    def restart(self, cmd, cwd = None):
         process = self._process
         if process is not None:
             if process.state() == QtCore.QProcess.ProcessState.Running:
