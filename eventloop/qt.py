@@ -129,6 +129,12 @@ class FileSystemWatch(base.FileSystemWatch):
     def stop(self):
         pass
 
+if 'QtCore' not in sys.modules:
+    class QtCore:
+        class QObject:
+            def __init__(self, parent = None) -> None:
+                pass
+
 class Server(QtCore.QObject):
     def __init__(self, parent = None):
         super().__init__(parent)
