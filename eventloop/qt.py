@@ -7,9 +7,19 @@ from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOU
 import sys
 
 if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_PYSIDE2_QASYNC]:
+    debug_print("PySide2")
     from PySide2 import QtCore
+    class ServerBase(QtCore.QObject):
+        pass
 elif flavour in [FLAVOUR_QT5, FLAVOUR_QT5_QASYNC]:
+    debug_print("PyQt5")
     from PyQt5 import QtCore
+    class ServerBase(QtCore.QObject):
+        pass
+else:
+    debug_print("not Qt flavour")
+    class ServerBase():
+        pass
 
 class EventLoop(base.EventLoop):
 
@@ -129,13 +139,12 @@ class FileSystemWatch(base.FileSystemWatch):
     def stop(self):
         pass
 
-if 'QtCore' not in sys.modules:
-    class QtCore:
-        class QObject:
-            def __init__(self, parent = None) -> None:
-                pass
 
-class Server(QtCore.QObject):
+
+
+
+
+class Server(ServerBase):
     def __init__(self, parent = None):
         super().__init__(parent)
         self._process = None

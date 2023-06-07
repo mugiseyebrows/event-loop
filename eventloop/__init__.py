@@ -79,7 +79,7 @@ class Schedule:
         executor = self._executor
         tasks = []
         for task in self._tasks:
-            debug_print("executing", task)
+            debug_print("executing copy task", task)
             res = executor.execute(task)
             if res == False:
                 debug_print("failed to execute task", task)
