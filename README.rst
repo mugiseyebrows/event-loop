@@ -75,7 +75,7 @@ For finer control over things you can use classes, first example can be rewriten
         loop = EventLoop()
         def on_change(file_path, event):
             schedule.append(file_path, timeout=1)
-        watch = FileSystemWatch()
+        watch = FileSystemWatch(loop)
         watch.start("/path/to/dir", on_change)
         executor = Executor()
         schedule = Schedule(executor)
@@ -92,7 +92,9 @@ You can use onchange script in command line to execute commands
 
     python -m eventloop.onchange D:\dev\app -- echo FILE
     onchange D:\dev\app -- echo FILE
-    onchange D:\dev\app -i *.cpp *.ui -e build --cwd D:\dev\app\build -- ninja ^&^& ctest
+    onchange D:\dev\app -i *.cpp *.ui --cwd D:\dev\app\build -- ninja "&&" ctest
+    onchange . -i "*.pyx" --beep -- python setup.py build_ext --inplace
+    onchange http-server.py --server -- python -u http-server.py
 
 License
 =======
