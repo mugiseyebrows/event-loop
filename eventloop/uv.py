@@ -82,6 +82,19 @@ class FileSystemWatch(base.FileSystemWatch):
             handle.ref = False
             handles.append(handle)
 
+        if sys.platform != 'win32' and recursive:
+            inner = []
+            for path in paths:
+                if os.path.isdir(path):
+                    for root, dirs, files in os.walk(path):
+                        for d in dirs:
+                            inner.append(os.path.join(root, d))
+            for path in inner:
+                handle = pyuv.fs.FSEvent(loop)
+                handle.start(path, flags, self.onChanged)
+                handle.ref = False
+                handles.append(handle)
+
         self._handles = handles
     def stop(self):
         pass
