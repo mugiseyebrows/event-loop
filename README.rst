@@ -72,13 +72,16 @@ For finer control over things you can use classes, first example can be rewriten
             print(file_path)
 
     if __name__ == "__main__":
+
         loop = EventLoop()
-        def on_change(file_path, event):
-            schedule.append(file_path, timeout=1)
-        watch = FileSystemWatch(loop)
-        watch.start("/path/to/dir", on_change)
         executor = Executor()
         schedule = Schedule(executor)
+
+        def on_change(file_path, event):
+            schedule.append(file_path, timeout=1)
+            
+        watch = FileSystemWatch(loop)
+        watch.start("/path/to/dir", on_change)
         loop.start()
 
 `Schedule` caches (deduplicates) tasks appended within `timeout` interval, so for example three immediate consecutive `changed` events on same file end up in just one `Executor.execute(task)` call. `on_file_changed` decorator also uses `Schedule` to cache events.
