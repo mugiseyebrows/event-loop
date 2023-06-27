@@ -56,6 +56,23 @@ def path_matches(path, include, exclude):
                 return False
     return True
 
+class WalkQueue:
+    def __init__(self):
+        self.items = []
+        self.history = set()
+
+    def append(self, item):
+        if item in self.history:
+            raise ValueError(item)
+        self.items.append(item)
+        self.history.add(item)
+
+    def pop(self, index):
+        return self.items.pop(index)
+    
+    def __len__(self):
+        return len(self.items)
+
 def walk(path, include, exclude, all_dirs = False, recursive=True):
     """
     Examples:
@@ -73,7 +90,7 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
     else:
         paths = [path]
 
-    queue = []
+    queue = WalkQueue()
     dirs = []
     files = []
 
@@ -90,16 +107,22 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
             for n in os.listdir(path):
                 path_ = os.path.join(path, n)
                 is_dir = os.path.isdir(path_)
+                queued = False
                 if path_matches(path_, include, exclude):
                     if is_dir:
                         dirs.append(path_)
+                        #print("queue.append", path_, 114)
                         queue.append(path_)
+                        queued = True
                     else:
                         files.append(path_)
                 elif all_dirs and is_dir:
                     dirs.append(path_)
-                if is_dir and recursive:
+                
+                if is_dir and recursive and not queued:
+                    #print("queue.append", path_, 123)
                     queue.append(path_)
+                    
         except PermissionError as e:
             debug_print(e)
         except FileNotFoundError as e:
