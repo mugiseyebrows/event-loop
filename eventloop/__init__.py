@@ -6,7 +6,7 @@ from . import base
 from . import uv
 from . import qt
 from . import qta
-from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
+from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_PYQT5, FLAVOUR_PYQT6, FLAVOUR_PYSIDE6, USE_QASYNC
 
 """
 set DEBUG_EVENTLOOP=1
@@ -14,14 +14,11 @@ set DEBUG_EVENTLOOP=0
 """
 
 def EventLoop(app = None):
-    return {
-        FLAVOUR_NONE: lambda app: None,
-        FLAVOUR_PYUV: lambda app: uv.EventLoop(),
-        FLAVOUR_PYSIDE2: lambda app: qt.EventLoop(app),
-        FLAVOUR_QT5: lambda app: qt.EventLoop(app),
-        FLAVOUR_PYSIDE2_QASYNC: lambda app: qta.EventLoop(app),
-        FLAVOUR_QT5_QASYNC: lambda app: qta.EventLoop(app),
-    }[flavour](app)
+    if USE_QASYNC:
+        return qta.EventLoop(app)
+    if flavour == FLAVOUR_PYUV:
+        return uv.EventLoop()
+    return qt.EventLoop(app)
 
 def Server(app = None, parent = None):
 
@@ -29,14 +26,10 @@ def Server(app = None, parent = None):
         from . import ps
         return ps.Server()
 
-    return {
-        FLAVOUR_NONE: psutil_server,
-        FLAVOUR_PYUV: psutil_server,
-        FLAVOUR_PYSIDE2: lambda app, parent: qt.Server(parent),
-        FLAVOUR_QT5: lambda app, parent: qt.Server(parent),
-        FLAVOUR_PYSIDE2_QASYNC: psutil_server,
-        FLAVOUR_QT5_QASYNC: psutil_server,
-    }[flavour](app, parent)
+    if flavour == FLAVOUR_PYUV:
+        return psutil_server(app, parent)
+
+    return qt.Server(parent)
 
 def FileSystemWatch(loop):
     if flavour == FLAVOUR_PYUV:

@@ -4,7 +4,7 @@ import re
 import sys
 
 if os.environ.get('DEBUG_EVENTLOOP') == "1":
-    debug_print = print
+    debug_print = lambda *args, **kwargs: print(*args, **kwargs, file=sys.stderr)
 else:
     debug_print = lambda *args, **kwargs: None
 
@@ -56,23 +56,6 @@ def path_matches(path, include, exclude):
                 return False
     return True
 
-class WalkQueue:
-    def __init__(self):
-        self.items = []
-        self.history = set()
-
-    def append(self, item):
-        if item in self.history:
-            raise ValueError(item)
-        self.items.append(item)
-        self.history.add(item)
-
-    def pop(self, index):
-        return self.items.pop(index)
-    
-    def __len__(self):
-        return len(self.items)
-
 def walk(path, include, exclude, all_dirs = False, recursive=True):
     """
     Examples:
@@ -90,7 +73,7 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
     else:
         paths = [path]
 
-    queue = WalkQueue()
+    queue = []
     dirs = []
     files = []
 
@@ -107,22 +90,16 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
             for n in os.listdir(path):
                 path_ = os.path.join(path, n)
                 is_dir = os.path.isdir(path_)
-                queued = False
                 if path_matches(path_, include, exclude):
                     if is_dir:
                         dirs.append(path_)
-                        #print("queue.append", path_, 114)
                         queue.append(path_)
-                        queued = True
                     else:
                         files.append(path_)
                 elif all_dirs and is_dir:
                     dirs.append(path_)
-                
-                if is_dir and recursive and not queued:
-                    #print("queue.append", path_, 123)
+                if is_dir and recursive:
                     queue.append(path_)
-                    
         except PermissionError as e:
             debug_print(e)
         except FileNotFoundError as e:
@@ -136,63 +113,61 @@ def walk(path, include, exclude, all_dirs = False, recursive=True):
     EVENT_CHANGE
 ) = range(2)
 
-
 (
     FLAVOUR_NONE,
     FLAVOUR_PYUV,
+    FLAVOUR_PYSIDE6,
+    FLAVOUR_PYQT6,
     FLAVOUR_PYSIDE2,
-    FLAVOUR_QT5,
-    FLAVOUR_PYSIDE2_QASYNC,
-    FLAVOUR_QT5_QASYNC
+    FLAVOUR_PYQT5,
 ) = range(6)
 
 flavour = FLAVOUR_NONE
 
+"""
 test = {n: os.environ.get(n) for n in ['USE_PYUV', 'USE_PYSIDE2', 'USE_PYQT5']}
 ones = [v for v in test.values() if v == '1']
 if len(ones) > 1:
     keys = [k for k in test.keys() if test[k] == '1']
     print("warning: {} env variables are set to 1, you should only set one of them".format(" and ".join(keys)))
+"""
 
-if os.environ.get('USE_PYUV') == '1':
+if os.environ.get('USE_PYUV') is not None:
     import pyuv
     flavour = FLAVOUR_PYUV
-elif os.environ.get('USE_PYSIDE2') == '1':
-    from PySide2 import QtCore
-    flavour = FLAVOUR_PYSIDE2
-elif os.environ.get('USE_PYQT5') == '1':
-    from PyQt5 import QtCore
-    flavour = FLAVOUR_QT5
 else:
-    try:
-        import pyuv
-        flavour = FLAVOUR_PYUV
-    except ImportError:
-        try:
-            from PySide2 import QtCore
-            flavour = FLAVOUR_PYSIDE2
-        except ImportError:
-            try:
-                from PyQt5 import QtCore
-                flavour = FLAVOUR_QT5
-            except ImportError:
-                raise Exception("eventloop needs one of: [pyuv, PySide2, PyQt5] packages to work, none found")
-
-if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_QT5]:
-    if os.environ.get('USE_QASYNC') == '1':
-        import qasync
-        if flavour == FLAVOUR_PYSIDE2:
-            flavour = FLAVOUR_PYSIDE2_QASYNC
-        else:
-            flavour = FLAVOUR_QT5_QASYNC
-    elif os.environ.get('USE_QASYNC') == '0':
-        pass
+    QT_API = os.environ.get('QT_API')
+    if QT_API is not None:
+        flavour = {
+            'pyqt5':FLAVOUR_PYQT5,
+            'pyside2':FLAVOUR_PYSIDE2,
+            'pyqt6':FLAVOUR_PYQT6,
+            'pyside6':FLAVOUR_PYSIDE6,
+        }[QT_API]
     else:
         try:
-            import qasync
-            if flavour == FLAVOUR_PYSIDE2:
-                flavour = FLAVOUR_PYSIDE2_QASYNC
-            else:
-                flavour = FLAVOUR_QT5_QASYNC
+            import pyuv
+            flavour = FLAVOUR_PYUV
         except ImportError:
-            pass
+            try:
+                from PySide6 import QtCore
+                flavour = FLAVOUR_PYSIDE6
+            except ImportError:
+                try:
+                    from PyQt6 import QtCore
+                    flavour = FLAVOUR_PYQT6
+                except ImportError:
+                    try:
+                        from PySide2 import QtCore
+                        flavour = FLAVOUR_PYSIDE2
+                    except ImportError:
+                        try:
+                            from PyQt5 import QtCore
+                            flavour = FLAVOUR_PYQT5
+                        except ImportError:
+                            raise ValueError('Eventloop needs one of packages: pyuv, pyqt5, pyside2, pyqt6, pyside6')
+
+USE_QASYNC = False
+if os.environ.get('USE_QASYNC') is not None:
+    import qasync
+    USE_QASYNC = True

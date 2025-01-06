@@ -3,17 +3,25 @@ import signal
 from .common import debug_print, walk, EVENT_CHANGE, debug_print, path_matches
 import glob
 import os
-from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
+from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_PYQT5, FLAVOUR_PYQT6, FLAVOUR_PYSIDE6
 import sys
 
-if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_PYSIDE2_QASYNC]:
+if flavour in [FLAVOUR_PYSIDE2]:
     debug_print("PySide2")
     from PySide2 import QtCore
     class ServerBase(QtCore.QObject):
         pass
-elif flavour in [FLAVOUR_QT5, FLAVOUR_QT5_QASYNC]:
+elif flavour in [FLAVOUR_PYQT5]:
     debug_print("PyQt5")
     from PyQt5 import QtCore
+    class ServerBase(QtCore.QObject):
+        pass
+elif flavour == FLAVOUR_PYSIDE6:
+    from PySide6 import QtCore
+    class ServerBase(QtCore.QObject):
+        pass
+elif flavour == FLAVOUR_PYQT6:
+    from PyQt6 import QtCore
     class ServerBase(QtCore.QObject):
         pass
 else:

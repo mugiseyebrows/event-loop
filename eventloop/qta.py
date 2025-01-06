@@ -2,14 +2,16 @@ import signal
 from . import base
 from .common import debug_print
 import os
-from .common import flavour, FLAVOUR_NONE, FLAVOUR_PYUV, FLAVOUR_PYSIDE2, FLAVOUR_QT5, FLAVOUR_PYSIDE2_QASYNC, FLAVOUR_QT5_QASYNC
+from .common import flavour, FLAVOUR_PYSIDE2, FLAVOUR_PYQT5, FLAVOUR_PYSIDE6, FLAVOUR_PYQT6
 
-if flavour in [FLAVOUR_PYSIDE2, FLAVOUR_PYSIDE2_QASYNC]:
+if flavour == FLAVOUR_PYSIDE2:
     from PySide2 import QtCore
-elif flavour in [FLAVOUR_QT5, FLAVOUR_QT5_QASYNC]:
+elif flavour == FLAVOUR_PYQT5:
     from PyQt5 import QtCore
-else:
-    pass
+elif flavour == FLAVOUR_PYQT6:
+    from PyQt6 import QtCore
+elif flavour == FLAVOUR_PYSIDE6:
+    from PySide6 import QtCore
 
 try:
     import asyncio
