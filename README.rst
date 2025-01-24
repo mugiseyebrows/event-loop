@@ -2,14 +2,11 @@
 eventloop: Abstraction layer for filesystem events
 ==================================================
 
-Eventloop uses any of: `pyuv` or `PySide2` or `PyQt5` installed in the system 
+Eventloop uses any of: `pyuv`, `PySide6`, `PyQt6`, `PySide2` or `PyQt5` installed in the system 
 to provide callback interface for filesystem events. And also timers.
 
 Package intended to be a building block for utility scripts for recompiling 
 or pushing files or restarting tests.
-
-`pyuv` is used preferably as it's most efficient. `uv` is a library that 
-powers nodejs event loop.
 
 Installing
 ==========
