@@ -12,6 +12,7 @@ setup(
     url='https://github.com/mugiseyebrows/event-loop',
     description='Abstraction layer for filesystem events',
     long_description = long_description,
+    long_description_content_type = 'text/x-rst',
     install_requires = ['colorama'],
     entry_points={
         'console_scripts': [
